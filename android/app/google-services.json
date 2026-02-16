@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "689679622866",
+    "project_id": "group4chatapp",
+    "storage_bucket": "group4chatapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:689679622866:android:46f871bbd5cab9ed03430b",
+        "android_client_info": {
+          "package_name": "com.example.group4_chat_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDM3D_hFDIfvF-kB8kmS8apfKQJZ1vK6uc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
