@@ -1,6 +1,6 @@
 # group4_chat_app
 
-A new Flutter project.
+This is a simple Chat application that uses flutter as the main framework and Firebase as the main database and authenticator.
 
 ## Getting Started
 
