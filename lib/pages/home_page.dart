@@ -12,8 +12,6 @@ class HomePage extends StatelessWidget{
   final ChatService _chatService = ChatService();
   final AuthService _authService = AuthService();
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,13 +56,13 @@ Widget _buildUserListItem(Map<String, dynamic> userData, BuildContext context) {
 // display all users except current user
 if (userData['email']!= _authService.getCurrentUser()!.email) {
 return UserTile(
-text: userData['email'],
+text: userData['name'] ?? userData['email'],
 onTap: () {
 //tapped on a user-> navigate to chat page
 Navigator.push(
 context,
 MaterialPageRoute(builder: (context) => ChatPage(
-receiverEmail: userData['email'],
+receiverName: userData['name'] ?? userData['email'],
 receiverID: userData['uid'],
 ),
 ),

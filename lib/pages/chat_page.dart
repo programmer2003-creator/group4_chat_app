@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:group4_chat_app/components/chat_bubble.dart';
@@ -5,16 +6,22 @@ import 'package:group4_chat_app/components/my_textfield.dart';
 import 'package:group4_chat_app/services/auth/auth_service.dart';
 import 'package:group4_chat_app/services/chat/chat_service.dart';
 
-class ChatPage extends StatelessWidget{
-  final String receiverEmail;
+
+class ChatPage extends StatefulWidget{
+  final String receiverName;
   final String receiverID;
 
-  ChatPage({
+   const ChatPage({
     super.key,
-  required this.receiverEmail,
+  required this.receiverName,
   required this.receiverID,
   });
 
+  @override
+  State<ChatPage> createState() => _ChatPageState();
+}
+
+class _ChatPageState extends State<ChatPage> {
   //text controller
   final TextEditingController _messageController = TextEditingController();
 
@@ -22,24 +29,70 @@ class ChatPage extends StatelessWidget{
   final ChatService _chatService = ChatService();
   final AuthService _authService = AuthService();
 
+  //for textfield focus
+  FocusNode myFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+
+    //add listener to focus node
+    myFocusNode.addListener(() {
+      if (myFocusNode.hasFocus) {
+        //cause a delay
+        Future.delayed(
+          const Duration(milliseconds: 500),
+              () => scrollDown(),
+        );
+      }
+    });
+
+    //wait a bit for a list view
+    Future.delayed(const Duration(milliseconds: 500),
+            () => scrollDown(),
+    );
+  }
+
+    @override
+    void dispose() {
+    myFocusNode.dispose();
+    _messageController.dispose();
+    super.dispose();
+    }
+
+    //scroll controller
+  final ScrollController _scrollController = ScrollController();
+    void scrollDown() {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(seconds: 1),
+          curve: Curves.fastOutSlowIn,
+        );
+      }
+    }
+
+
+
   //send message
   void sendMessage() async {
     //if there is something
     if (_messageController.text.isNotEmpty) {
       //send message
-      await _chatService.sendMessage(receiverID, _messageController.text);
+      await _chatService.sendMessage(widget.receiverID, _messageController.text);
 
-     //clear text
+    //clear text
       _messageController.clear();
-
     }
+
+    scrollDown();
   }
 
 @override
   Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
-      title: Text(receiverEmail),
+      title: Text(widget.receiverName),
       backgroundColor: Colors.black54,
       foregroundColor: Colors.grey,
       elevation: 0,
@@ -58,11 +111,12 @@ class ChatPage extends StatelessWidget{
     ),
     );
 }
+
     //build message list
 Widget _buildMessageList() {
     String senderID = _authService.getCurrentUser()!.uid;
     return StreamBuilder(
-      stream: _chatService.getMessages(receiverID, senderID),
+      stream: _chatService.getMessages(widget.receiverID, senderID),
       builder: (context, snapshot) {
         //errors
         if (snapshot.hasError) {
@@ -76,23 +130,69 @@ Widget _buildMessageList() {
 
         //return list view
         return ListView(
-          children: snapshot.data!.docs.map((doc) => _buildMessageItem(doc)).toList(),
+          controller: _scrollController,
+          children:
+          snapshot.data!.docs.map((doc) => _buildMessageItem(doc)).toList(),
         );
       },
     );
 }
+
 //build message item
-Widget _buildMessageItem(DocumentSnapshot doc) {
+  Widget _buildMessageItem(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-    //is current user
-    bool isCurrentUser = data['senderID'] == _authService.getCurrentUser()!.uid;
+    bool isCurrentUser =
+        data['senderID'] == _authService.getCurrentUser()!.uid;
 
-    //align message
-    var alignment = isCurrentUser ? Alignment.centerRight : Alignment.centerLeft;
+    var alignment =
+    isCurrentUser ? Alignment.centerRight : Alignment.centerLeft;
 
-    return Container(
+    // get timestamp
+    String formattedTime = '';
+    if (data['timestamp'] != null) {
+      Timestamp ts = data['timestamp'] as Timestamp;
+      formattedTime = DateFormat('HH:mm').format(ts.toDate());
+    }
+
+    // construct chatRoomID
+    List<String> ids = [
+      data['senderID'],
+      data['receiverID']
+    ];
+    ids.sort();
+    String chatRoomID = ids.join('_');
+
+    // ✅ ADD THIS: GestureDetector for long press
+    return GestureDetector(
+      onLongPress: isCurrentUser
+          ? () async {
+        bool confirm = await showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Delete message?'),
+            content:
+            const Text('Are you sure you want to delete this message?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+        );
+        if (confirm) {
+          await _chatService.deleteMessage(chatRoomID, doc.id);
+        }
+      }
+          : null,
+      child: Container(
         alignment: alignment,
+        margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
         child: Column(
           crossAxisAlignment:
           isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
@@ -100,12 +200,25 @@ Widget _buildMessageItem(DocumentSnapshot doc) {
             ChatBubble(
               message: data['message'],
               isCurrentUser: isCurrentUser,
+              timestamp: data['timestamp'],
             ),
-            const SizedBox(height: 5)
-      ],
-    ),
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                formattedTime,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+            const SizedBox(height: 5),
+          ],
+        ),
+      ),
     );
-}
+  }
+
 
 //build message input
 Widget _buildUserInput() {
@@ -118,6 +231,14 @@ Widget _buildUserInput() {
           hintText: 'Type a message...',
           obscureText: false,
           controller: _messageController,
+          focusNode: myFocusNode,
+
+          //send using enter key
+          onSubmitted: (value) {
+            if (value.trim().isNotEmpty) {
+              sendMessage();
+            }
+          },
         ),
         ),
 

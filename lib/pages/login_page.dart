@@ -85,6 +85,7 @@ catch (e) {
           //login button
           MyButton(
             text: 'Login',
+            isBold: true,
             onTap:() => login(context),
           ),
 
