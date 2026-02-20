@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:group4_chat_app/services/storage_service.dart';
+import '../storage_service.dart';
 
 class AuthService {
   // instance of auth
@@ -13,6 +13,14 @@ class AuthService {
     return _auth.currentUser;
   }
 
+  // Generate username from email by taking the part before @ and removing any trailing numbers
+  String _generateUsername(String email) {
+    // Get the part before '@'
+    String prefix = email.split('@')[0];
+    // Remove any trailing numbers
+    return prefix.replaceAll(RegExp(r'\d+$'), '');
+  }
+
   // sign in
   Future<UserCredential> signInWithEmailAndPassword(String email, String password) async {
     try {
@@ -22,16 +30,15 @@ class AuthService {
         password: password,
       );
 
-      // save email to local storage
-      await _storage.saveString('user_email', email);
-
-      //save user info if isn't existing
-      _firestore.collection('Users').doc(userCredential.user!.uid).set(
-        {
-          'uid': userCredential.user!.uid,
-          'email': email,
-        },
-      );
+      // fetch user data from firestore
+      DocumentSnapshot userDoc = await _firestore.collection('Users').doc(userCredential.user!.uid).get();
+      
+      if (userDoc.exists) {
+        String name = userDoc.get('name') ?? _generateUsername(email);
+        // save email and name to local storage
+        await _storage.saveString('user_email', email);
+        await _storage.saveString('user_name', name);
+      }
 
       return userCredential;
     } on FirebaseAuthException catch (e) {
@@ -40,7 +47,7 @@ class AuthService {
   }
 
   //sign up
-  Future<UserCredential> signUpWithEmailAndPassword(String email, String password) async {
+  Future<UserCredential> signUpWithEmailAndPassword(String email, String password, {String? name}) async {
     try {
       //create user
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
@@ -51,11 +58,19 @@ class AuthService {
       // save email to local storage
       await _storage.saveString('user_email', email);
 
+      // Determine the name to save
+      String finalName = (name != null && name.isNotEmpty) 
+          ? name 
+          : _generateUsername(email);
+      
+      await _storage.saveString('user_name', finalName);
+
       //save user info
-      _firestore.collection('Users').doc(userCredential.user!.uid).set(
+      await _firestore.collection('Users').doc(userCredential.user!.uid).set(
         {
           'uid': userCredential.user!.uid,
           'email': email,
+          'name': finalName,
         },
       );
 
@@ -69,6 +84,7 @@ class AuthService {
   Future<void> signOut() async {
     // clear local storage
     await _storage.remove('user_email');
+    await _storage.remove('user_name');
     
     return await _auth.signOut();
   }

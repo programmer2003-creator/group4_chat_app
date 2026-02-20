@@ -5,13 +5,14 @@ class MyTextField extends StatelessWidget {
   final bool obscureText;
   final TextEditingController controller;
   final FocusNode? focusNode;
-
+  final void Function(String)? onSubmitted;
 
       const MyTextField({super.key,
       required this.hintText,
       required this.obscureText,
       required this.controller,
         this.focusNode,
+        this.onSubmitted,
       });
 
       @override
@@ -35,6 +36,7 @@ class MyTextField extends StatelessWidget {
             hintStyle: TextStyle(color: Theme.of(context).colorScheme.primary),
 
             ),
+            onSubmitted: onSubmitted,
           ),
         );
       }

@@ -41,6 +41,16 @@ return _firestore.collection('Users').snapshots().map((snapshot) {
 });
 
   }
+//delete message
+  Future<void> deleteMessage(String chatRoomID, String messageID) async {
+    await FirebaseFirestore.instance
+        .collection('ChatRooms')
+        .doc(chatRoomID)
+        .collection('messages')
+        .doc(messageID)
+        .delete();
+  }
+
 
   //send sms
 Future<void> sendMessage(String receiverID,message) async {
