@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:group4_chat_app/pages/profile_page.dart';
 import 'package:group4_chat_app/services/auth/auth_service.dart';
 import 'package:group4_chat_app/pages/settings_page.dart';
 
@@ -42,6 +43,27 @@ class MyDrawer extends StatelessWidget {
                   onTap: () {
                     // pop drawer
                     Navigator.pop(context);
+                  },
+                ),
+              ),
+
+              // profile list tile
+              Padding(
+                padding: const EdgeInsets.only(left: 25.0),
+                child: ListTile(
+                  title: const Text('P R O F I L E'),
+                  leading: const Icon(Icons.person),
+                  onTap: () {
+                    // pop drawer
+                    Navigator.pop(context);
+
+                    // navigate to profile page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ProfilePage(),
+                      ),
+                    );
                   },
                 ),
               ),
