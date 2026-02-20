@@ -4,8 +4,9 @@ import 'package:group4_chat_app/components/my_button.dart';
 import 'package:group4_chat_app/components/my_textfield.dart';
 
 class RegisterPage extends StatelessWidget {
-  //email and password text controllers
+  //email, name and password text controllers
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
 
@@ -29,6 +30,7 @@ class RegisterPage extends StatelessWidget {
         await _auth.signUpWithEmailAndPassword(
           emailController.text,
           passwordController.text,
+          name: nameController.text,
         );
       } catch (e) {
         if (context.mounted) {
@@ -56,85 +58,98 @@ class RegisterPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-          child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          //logo
-          Icon(
-            Icons.message,
-            size: 60,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-
-          const SizedBox(height: 50),
-          //welcome back
-          Text(
-            "Create Your Own Account!",
-            style: TextStyle(
+          child: SingleChildScrollView(
+            child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+            //logo
+            Icon(
+              Icons.message,
+              size: 60,
               color: Theme.of(context).colorScheme.primary,
-              fontSize: 16,
             ),
-          ),
-          const SizedBox(height: 25),
-          //email text field
-          MyTextField(
-            hintText: 'Email',
-            obscureText: false,
-            controller: emailController,
-          ),
-
-          const SizedBox(height: 10),
-
-          //password text field
-          MyTextField(
-            hintText: 'Password',
-            obscureText: true,
-            controller: passwordController,
-          ),
-
-          const SizedBox(height: 10),
-
-          //confirm password text field
-          MyTextField(
-            hintText: 'Confirm Password',
-            obscureText: true,
-            controller: confirmPasswordController,
-          ),
-
-          const SizedBox(height: 25),
-
-          //login button
-          MyButton(
-            text: 'Register',
-            onTap: () => register(context),
-          ),
-
-          const SizedBox(height: 25),
-
-          //register now
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Already have an account?',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+            
+            const SizedBox(height: 50),
+            //welcome back
+            Text(
+              "Create Your Own Account!",
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontSize: 16,
               ),
-              GestureDetector(
-                onTap: onTap,
-                child: Text(
-                  ' Login Here!',
+            ),
+            const SizedBox(height: 25),
+            
+            //name text field
+            MyTextField(
+              hintText: 'Name',
+              obscureText: false,
+              controller: nameController,
+            ),
+            
+            const SizedBox(height: 10),
+            
+            //email text field
+            MyTextField(
+              hintText: 'Email',
+              obscureText: false,
+              controller: emailController,
+            ),
+            
+            const SizedBox(height: 10),
+            
+            //password text field
+            MyTextField(
+              hintText: 'Password',
+              obscureText: true,
+              controller: passwordController,
+            ),
+            
+            const SizedBox(height: 10),
+            
+            //confirm password text field
+            MyTextField(
+              hintText: 'Confirm Password',
+              obscureText: true,
+              controller: confirmPasswordController,
+            ),
+            
+            const SizedBox(height: 25),
+            
+            //register button
+            MyButton(
+              text: 'Register',
+              isBold: true,
+              onTap: () => register(context),
+            ),
+            
+            const SizedBox(height: 25),
+            
+            //register now
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Already have an account?',
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      )),
+                GestureDetector(
+                  onTap: onTap,
+                  child: Text(
+                    ' Login Here!',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+                  ],
+                ),
+          )),
       backgroundColor: Theme.of(context).colorScheme.surface,
     );
   }

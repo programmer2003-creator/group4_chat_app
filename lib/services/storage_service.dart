@@ -5,30 +5,30 @@ class StorageService {
   factory StorageService() => _instance;
   StorageService._internal();
 
-  late SharedPreferences _prefs;
+  SharedPreferences? _prefs;
 
-  // Initialize shared preferences
+  // Initialize the shared preferences
   Future<void> init() async {
-    _prefs = await SharedPreferences.getInstance();
+    _prefs ??= await SharedPreferences.getInstance();
   }
 
-  // Save user data (e.g., email or UID)
-  Future<void> saveString(String key, String value) async {
-    await _prefs.setString(key, value);
+  // Save a string value
+  Future<bool> saveString(String key, String value) async {
+    return await _prefs?.setString(key, value) ?? false;
   }
 
-  // Retrieve user data
+  // Get a string value
   String? getString(String key) {
-    return _prefs.getString(key);
+    return _prefs?.getString(key);
   }
 
-  // Clear specific data
-  Future<void> remove(String key) async {
-    await _prefs.remove(key);
+  // Remove a value
+  Future<bool> remove(String key) async {
+    return await _prefs?.remove(key) ?? false;
   }
 
-  // Clear all data
-  Future<void> clear() async {
-    await _prefs.clear();
+  // Clear all values
+  Future<bool> clear() async {
+    return await _prefs?.clear() ?? false;
   }
 }

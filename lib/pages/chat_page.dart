@@ -8,12 +8,12 @@ import 'package:group4_chat_app/services/chat/chat_service.dart';
 
 
 class ChatPage extends StatefulWidget{
-  final String receiverEmail;
+  final String receiverName;
   final String receiverID;
 
    const ChatPage({
     super.key,
-  required this.receiverEmail,
+  required this.receiverName,
   required this.receiverID,
   });
 
@@ -47,7 +47,7 @@ class _ChatPageState extends State<ChatPage> {
       }
     });
 
-    //wait a bit for a lit view
+    //wait a bit for a list view
     Future.delayed(const Duration(milliseconds: 500),
             () => scrollDown(),
     );
@@ -63,10 +63,13 @@ class _ChatPageState extends State<ChatPage> {
     //scroll controller
   final ScrollController _scrollController = ScrollController();
     void scrollDown() {
-      _scrollController.animateTo(_scrollController.position.maxScrollExtent,
-        duration: const Duration(seconds: 1),
-        curve: Curves.fastOutSlowIn,
-      );
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(seconds: 1),
+          curve: Curves.fastOutSlowIn,
+        );
+      }
     }
 
 
@@ -89,7 +92,7 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
-      title: Text(widget.receiverEmail),
+      title: Text(widget.receiverName),
       backgroundColor: Colors.black54,
       foregroundColor: Colors.grey,
       elevation: 0,
@@ -197,6 +200,7 @@ Widget _buildMessageList() {
             ChatBubble(
               message: data['message'],
               isCurrentUser: isCurrentUser,
+              timestamp: data['timestamp'],
             ),
             Padding(
               padding: const EdgeInsets.only(top: 2),
